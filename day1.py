@@ -80,7 +80,6 @@ def part2():
 
         value = 0 if not first_digit or not last_digit else int(f"{first_digit}{last_digit}")
         val_sum += value
-        print(value)
 
     return val_sum
 
