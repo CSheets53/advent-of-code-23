@@ -40,8 +40,45 @@ def part1():
     return min(source_nums)
 
 def part2():
-    # todo some other time
-    pass
+    # shoutout to Dazbo's guide helping me try to understand this: https://github.com/derailed-dash/Advent-of-Code/blob/master/src/AoC_2023/Dazbo's_Advent_of_Code_2023.ipynb
+    seeds, maps, map_names = parse_maps()
+    ranges_to_map = []
+    for i in range(0, len(seeds), 2):
+        ranges_to_map.append((seeds[i], seeds[i] + seeds[i+1]))
+
+    for name in map_names:
+        new_ranges = []
+
+        for line in maps[name]:
+            dest, map_start, size = line[0], line[1], line[2]
+            map_end = map_start + size
+
+            unused_ranges = []
+            while ranges_to_map:
+                src_start, src_end = ranges_to_map.pop()
+
+                # split the source range into its overlap and non-overlapped segments
+                left_no_overlap = (src_start, min(src_end, map_start))
+                mid_overlapped = (max(src_start, map_start), min(src_end, map_end))
+                right_no_overlap = (max(src_start, map_end), src_end)
+
+                if left_no_overlap[1] > left_no_overlap[0]:
+                    # we started before the map started
+                    unused_ranges.append(left_no_overlap)
+                if mid_overlapped[1] > mid_overlapped[0]:
+                    # there is some overlap
+                    offset = dest - map_start
+                    new_ranges.append((mid_overlapped[0] + offset, mid_overlapped[1] + offset))
+                if right_no_overlap[1] > right_no_overlap[0]:
+                    # we ended after the map ended
+                    unused_ranges.append(right_no_overlap)
+
+            ranges_to_map = unused_ranges
+
+        # pass on any unmapped ranges as 1:1
+        ranges_to_map += new_ranges
+
+    return min(start for start, _ in ranges_to_map)
 
 #print(f"Part 1: {part1()}")
 print(f"Part 2: {part2()}")
